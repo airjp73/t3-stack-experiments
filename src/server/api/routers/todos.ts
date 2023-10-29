@@ -3,11 +3,13 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export const todoRouter = createTRPCRouter({
-  list: publicProcedure.query(({ ctx }) => {
-    return ctx.db.todo.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-  }),
+  list: publicProcedure
+    .input(z.object({ page: z.number() }))
+    .query(({ ctx }) => {
+      return ctx.db.todo.findMany({
+        orderBy: { createdAt: "desc" },
+      });
+    }),
 
   create: publicProcedure
     .input(

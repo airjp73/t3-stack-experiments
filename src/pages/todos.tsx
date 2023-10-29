@@ -3,7 +3,12 @@ import { api } from "~/utils/api";
 
 export default function Todos() {
   const utils = api.useContext();
-  const todos = api.todo.list.useQuery();
+  const todos = api.todo.list.useQuery({
+    page: 1,
+  });
+  api.todo.list.useQuery({
+    page: 2,
+  });
   const { mutate: createTodo } = api.todo.create.useMutation({
     onSuccess: () => utils.todo.invalidate(),
   });
@@ -34,6 +39,7 @@ export default function Todos() {
               const content = data.get("content");
               if (content && typeof content === "string") {
                 createTodo({ content });
+                createTodo({ content });
                 (e.target as HTMLFormElement).reset();
               }
             }}
@@ -58,7 +64,7 @@ export default function Todos() {
                     <input
                       type="checkbox"
                       checked={todo.isCompleted}
-                      onClick={() => {
+                      onChange={() => {
                         if (todo.isCompleted) return;
                         completeTodo({ id: todo.id });
                       }}

@@ -8,7 +8,7 @@ import { api } from "~/utils/api";
 import { appRouter } from "~/server/api/root";
 import { db } from "~/server/db";
 import {} from "@trpc/server";
-import { createInnerTRPCContext, createTRPCContext } from "~/server/api/trpc";
+import { createInnerTRPCContext } from "~/server/api/trpc";
 import { type Session } from "next-auth";
 import SuperJSON from "superjson";
 import userEvent from "@testing-library/user-event";
@@ -28,29 +28,42 @@ beforeAll(async () => {
           name: "Test User",
         },
       };
-      const url = new URL(request.url);
+      const body =
+        request.method === "GET"
+          ? JSON.parse(new URL(request.url).searchParams.get("input"))
+          : await request.json();
       const caller = appRouter.createCaller(
         createInnerTRPCContext({ session }),
       );
-      let c: any = caller;
-      const path = trpc.split(".");
-      for (const p of path) {
-        c = c[p];
-      }
 
-      const getBody = async () => {
-        const body = await request.json();
-        return SuperJSON.deserialize(body["0"]);
-      };
+      const commands = trpc.split(",");
+
+      const promises: any[] = [];
+      Object.entries(body).forEach(([key, value], i) => {
+        let c: any = caller;
+        const path = commands[i].split(".");
+        for (const p of path) {
+          c = c[p];
+        }
+
+        try {
+          const d = SuperJSON.deserialize(value);
+          const prom = c(d);
+          promises.push(prom);
+        } catch (error) {
+          console.log(error);
+          throw error;
+        }
+      });
       try {
-        const res =
-          request.method === "GET" ? await c() : await c(await getBody());
-        const r = SuperJSON.serialize(res);
-        const r2 = [{ result: { data: r } }];
-        return HttpResponse.json(r2);
-      } catch (err) {
-        console.log(err);
-        throw err;
+        const responses = await Promise.all(promises);
+        const all = responses.map((r) => ({
+          result: { data: SuperJSON.serialize(r) },
+        }));
+        return HttpResponse.json(all);
+      } catch (error) {
+        console.log(error);
+        throw error;
       }
     }),
   );
@@ -69,5 +82,5 @@ test("creates todos", async () => {
   await screen.findByText("Test todo");
   await userEvent.type(screen.getByTestId("input"), "Test todo 2");
   await userEvent.click(screen.getByText("Add"));
-  expect(await screen.findByText("Test todo 2")).toBeInTheDocument();
+  expect(await screen.findAllByText("Test todo 2")).toHaveLength(2);
 });
