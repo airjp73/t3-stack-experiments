@@ -27,6 +27,7 @@ export default function Todos() {
             Todos
           </h1>
           <form
+            className="space-x-2"
             onSubmit={(e) => {
               e.preventDefault();
               const data = new FormData(e.target as HTMLFormElement);
@@ -38,7 +39,12 @@ export default function Todos() {
             }}
           >
             <input name="content" />
-            <button type="submit">Add</button>
+            <button
+              type="submit"
+              className="rounded-sm border-black bg-white p-2"
+            >
+              Add
+            </button>
           </form>
           <div className="flex flex-col items-center gap-2">
             {todos.isLoading ? (
@@ -58,6 +64,7 @@ export default function Todos() {
                       }}
                     />
                     <button
+                      className="rounded-s border-black bg-white p-2 text-black"
                       type="button"
                       onClick={() => {
                         deleteTodo({ id: todo.id });
