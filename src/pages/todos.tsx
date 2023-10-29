@@ -38,7 +38,7 @@ export default function Todos() {
               }
             }}
           >
-            <input name="content" />
+            <input name="content" data-testid="input" />
             <button
               type="submit"
               className="rounded-sm border-black bg-white p-2"
