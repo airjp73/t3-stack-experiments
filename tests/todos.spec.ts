@@ -5,12 +5,20 @@ test.beforeAll(async () => {
   await db.$executeRaw`delete from todo`;
 });
 
-test("creates a todo", async ({ page }) => {
+test("creates a todo", async ({ page, context }) => {
   await db.todo.create({
     data: {
       content: "Test todo",
     },
   });
+  await context.addCookies([
+    {
+      name: "testing-123",
+      value: "testing-123",
+      url: "http://localhost:3000",
+    },
+  ]);
+
   await page.goto("http://localhost:3000/todos");
 
   await expect(page.getByText("Test todo")).toBeVisible();

@@ -9,7 +9,8 @@
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start",
-    "test": "vitest",
+    "test": "playwright test --ui",
+    "test:run": "playwright test",
     "e2e": "start-server-and-test 'bun dev' 3000 'playwright test --ui'",
     "e2e:ci": "start-server-and-test 'bun dev' 3000 'playwright test'"
   },
