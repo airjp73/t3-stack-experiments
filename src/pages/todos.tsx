@@ -1,4 +1,5 @@
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 
 export default function Todos() {
@@ -18,6 +19,7 @@ export default function Todos() {
   const { mutate: deleteTodo } = api.todo.delete.useMutation({
     onSuccess: () => utils.todo.invalidate(),
   });
+  const router = useRouter();
 
   return (
     <>
@@ -33,14 +35,17 @@ export default function Todos() {
           </h1>
           <form
             className="space-x-2"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               const data = new FormData(e.target as HTMLFormElement);
               const content = data.get("content");
               if (content && typeof content === "string") {
-                createTodo({ content });
-                createTodo({ content });
-                (e.target as HTMLFormElement).reset();
+                await Promise.all([
+                  createTodo({ content }),
+                  createTodo({ content }),
+                ]);
+                // (e.target as HTMLFormElement).reset();
+                // await router.push("/");
               }
             }}
           >

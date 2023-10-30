@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { test, beforeAll, expect } from "vitest";
+import { test, beforeAll, expect, vi } from "vitest";
 import { setupServer } from "msw/node";
 import { http } from "msw";
 import Todos from "~/pages/todos";
@@ -10,11 +10,14 @@ import { db } from "~/server/db";
 import {} from "@trpc/server";
 import { createInnerTRPCContext } from "~/server/api/trpc";
 import { type Session } from "next-auth";
+import { MemoryRouterProvider } from "next-router-mock/MemoryRouterProvider/next-13.5";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/vitest";
 
 const id = String(Date.now());
+
+vi.mock("next/router", () => vi.importActual("next-router-mock"));
 
 beforeAll(async () => {
   await db.$executeRaw`delete from todo`;
@@ -42,7 +45,12 @@ beforeAll(async () => {
 
 const WithT = api.withTRPC(Todos);
 test("creates todos", async () => {
-  render(<WithT />);
+  render(
+    // Provider only necessary when using next/link
+    <MemoryRouterProvider url="/todos">
+      <WithT />
+    </MemoryRouterProvider>,
+  );
   await db.todo.create({
     data: {
       content: "Test todo",
