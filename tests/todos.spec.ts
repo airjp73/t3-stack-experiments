@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { db } from "~/server/db";
 
 test.beforeAll(async () => {
-  await db.$executeRaw`delete from todo`;
+  await db.todo.deleteMany();
 });
 
 test("creates a todo", async ({ page, context }) => {
